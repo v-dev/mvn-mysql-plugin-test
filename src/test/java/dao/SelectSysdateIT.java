@@ -17,10 +17,10 @@ public class SelectSysdateIT {
 
     private void setupDataSource() {
         dataSource = new MysqlDataSource();
-        ((MysqlDataSource) dataSource).setDatabaseName("root");
+        ((MysqlDataSource) dataSource).setDatabaseName("testdb");
         ((MysqlDataSource) dataSource).setPort(43444);
-        ((MysqlDataSource) dataSource).setUser("root");
-        ((MysqlDataSource) dataSource).setPassword("root");
+        ((MysqlDataSource) dataSource).setUser("user");
+        ((MysqlDataSource) dataSource).setPassword("password");
         ((MysqlDataSource) dataSource).setServerName("localhost");
     }
 

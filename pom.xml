@@ -16,6 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql.connector.version>5.1.27</mysql.connector.version>
         <logback.version>1.0.13</logback.version>
+        <mysql.plugin.version>0.6</mysql.plugin.version>
     </properties>
 
     <build>
@@ -47,7 +48,7 @@
             <plugin>
                 <groupId>com.jcabi</groupId>
                 <artifactId>jcabi-mysql-maven-plugin</artifactId>
-                <version>0.3</version>
+                <version>${mysql.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>mysql-test</id>
@@ -59,6 +60,9 @@
                         <configuration>
                             <port>43444</port>
                             <data>${project.build.directory}/mysql-data</data>
+                            <dbname>testdb</dbname>
+                            <user>user</user>
+                            <password>password</password>
                         </configuration>
                     </execution>
                 </executions>
@@ -68,6 +72,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.16</version>
+                <configuration>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
                 <executions>
                     <execution>
                         <id>integration-test</id>
