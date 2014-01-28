@@ -7,30 +7,52 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
 
-public class SelectSysdateIT {
+import static org.fest.assertions.api.Assertions.assertThat;
+
+public class SelectIT {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private DataSource dataSource;
     private Connection connection;
 
+    private final String USER = "user";
+
     private void setupDataSource() {
         dataSource = new MysqlDataSource();
         ((MysqlDataSource) dataSource).setDatabaseName("testdb");
         ((MysqlDataSource) dataSource).setPort(43444);
-        ((MysqlDataSource) dataSource).setUser("user");
+        ((MysqlDataSource) dataSource).setUser(USER);
         ((MysqlDataSource) dataSource).setPassword("password");
         ((MysqlDataSource) dataSource).setServerName("localhost");
     }
 
     @Test
-    public void test() {
+    public void testSysdateIsToday() {
         setupDataSource();
         newConnection();
 
-        String actual = selectSysdate();
+        Date actual = selectSysdate();
         logger.info("sysdate: " + actual);
+
+        final Date today = new Date();
+        assertThat(actual).isInSameDayAs(today);
+    }
+
+    @Test
+    public void isCustomUser() {
+        setupDataSource();
+        newConnection();
+
+        String actual = selectUser();
+        logger.info("actual: " + actual);
+
+        assertThat(actual).startsWith(USER);
     }
 
     @After
@@ -43,7 +65,7 @@ public class SelectSysdateIT {
             logger.info("Trying newConnection...");
             connection = dataSource.getConnection();
         } catch (SQLException e) {
-            logger.error("newConnection(): Error getting Connection from DataSource: " + e);
+            logger.error("newConnection(): Error getting Connection from DataSource: ", e);
         }
     }
 
@@ -54,46 +76,53 @@ public class SelectSysdateIT {
                 connection.close();
             }
         } catch (SQLException e) {
-            logger.error("closeConnection(): Problem closing connection: " + e );
+            logger.error("closeConnection(): Problem closing connection: ", e);
         }
     }
 
-    private String selectSysdate() {
-        String selectSql = "SELECT SYSDATE()";
-        Date date = null;
+    private Date selectSysdate() {
+        return executeSimpleSelect("SELECT SYSDATE()", Date.class);
+    }
+
+    private String selectUser() {
+        return executeSimpleSelect("SELECT USER()", String.class);
+    }
+
+    private <T> T executeSimpleSelect(String selectsql, Class<T> returnType) {
+        T result = null;
 
         PreparedStatement statement = null;
         try {
-            statement = connection.prepareStatement(selectSql);
+            statement = connection.prepareStatement(selectsql);
         } catch (SQLException e) {
-            logger.error("error preparing statement: " + e);
+            logger.error("Error preparing statement: ", e);
         }
 
         ResultSet resultset = null;
         try {
             resultset = statement.executeQuery();
         } catch (SQLException e) {
-            logger.error("error executing select: " + e);
+            logger.error("Error executing select: ", e);
         }
 
         try {
-            while ( resultset.next() ) {
-                date = resultset.getDate(1);
-                logger.info("Got date: " + date);
+            while (resultset.next()) {
+                result = (T) resultset.getObject(1);
+                logger.info("Got the following data: " + result);
             }
         } catch (SQLException e) {
-            logger.error("OMG, another sqlexception, this time during reading resultset: " + e);
+            logger.error("Another SQLException, this time during reading resultset: ", e);
         } finally {
             try {
                 resultset.close();
                 statement.close();
                 closeConnection();
             } catch (SQLException e) {
-                logger.error("Can't get anything right!  Error trying to close!: " + e);
+                logger.error("Error trying to close: ", e);
             }
         }
 
-        return date.toString();
+        return result;
     }
 
 }

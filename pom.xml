@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql.connector.version>5.1.27</mysql.connector.version>
         <logback.version>1.0.13</logback.version>
-        <mysql.plugin.version>0.6</mysql.plugin.version>
+        <mysql.plugin.version>0.6.1</mysql.plugin.version>
     </properties>
 
     <build>
@@ -108,6 +108,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-assert-core</artifactId>
+            <version>2.0M10</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
